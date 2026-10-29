@@ -52,6 +52,14 @@ textarea.ed{flex:1;resize:none;border:0;border-radius:0;padding:10px;line-height
 .sr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd)}
 .sw{width:22px;height:22px;border-radius:50%;padding:0;border:2px solid transparent}.sw[aria-pressed=true]{border-color:var(--tx)}
 .kv{display:grid;grid-template-columns:130px 1fr 90px;gap:4px 10px;padding:12px 16px;overflow:auto;align-content:start}.kv .t{font-size:11px;color:var(--dim)}.kv div{word-break:break-word}
+.nl{width:210px;border-right:1px solid var(--bd);display:flex;flex-direction:column;flex:none;min-height:0}.ne{flex:1;display:flex;flex-direction:column;min-width:0}
+#lock{position:fixed;inset:0;z-index:99000;background:var(--bg);display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-items:center;padding:12px;transition:opacity .4s var(--e)}#lock.off{opacity:0;pointer-events:none}
+#lock .lw{width:560px;max-width:100%;height:min(320px,90vh);display:flex;flex-direction:column;background:#161615;border:1px solid var(--bd);border-radius:10px;box-shadow:var(--sh);overflow:hidden;animation:pop var(--d) var(--e)}
+#lock .lw .th{cursor:default}#lock .dots i{width:12px;height:12px;border-radius:50%;background:#807d76}
+#lock .lb{flex:1;overflow:auto;padding:10px;color:#d9d6cf;word-break:break-word;cursor:text}#lock .lb .dim{color:#8f8c85}#lock .lb .e{color:var(--er)}
+#lock .ln{display:flex;gap:8px}#lock .ps{color:var(--ac);white-space:nowrap}
+#lock input{flex:1;min-width:0;border:0;background:none;padding:0;outline:0;color:transparent;caret-color:#d9d6cf}
+#lock .lw.bad{animation:shake .3s}@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 #bar{position:fixed;left:0;right:0;bottom:0;height:calc(44px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;gap:4px;padding-left:6px;padding-right:6px;background:var(--s1);border-top:1px solid var(--bd);z-index:var(--zbar)}
 #apps{display:flex;gap:2px;flex:1;overflow-x:auto}
 .tk{position:relative;background:none;border:0;padding:6px 9px}.tk::after{content:"";position:absolute;bottom:2px;left:50%;width:0;height:2px;border-radius:2px;background:var(--dim);transform:translateX(-50%);transition:width var(--d) var(--e)}
@@ -79,14 +87,14 @@ textarea.ed{flex:1;resize:none;border:0;border-radius:0;padding:10px;line-height
 <div id="boot"><h1><i>✱</i> Ember OS</h1><pre id="bl"></pre></div>
 <div id="desk"><div id="icons"></div></div>
 <footer id="bar"><button class="tk" id="lb" aria-label="Open app launcher (Alt+Space)" title="Apps (Alt+Space)"></button><div id="apps" role="toolbar" aria-label="Running applications"></div>
-<button class="tk" id="qb" aria-label="Quick settings"></button><button id="clock" aria-label="Clock"></button></footer>
+<button class="tk" id="kb" aria-label="Lock screen (Alt+L)" title="Lock (Alt+L)"></button><button class="tk" id="qb" aria-label="Quick settings"></button><button id="clock" aria-label="Clock"></button></footer>
 <div class="pop" id="launch" hidden role="dialog" aria-label="App launcher"></div>
 <div class="pop" id="qs" hidden role="dialog" aria-label="Quick settings"></div>
 <div id="toasts" aria-live="polite"></div>
 <script>
 'use strict';
 const $=(s,r=document)=>r.querySelector(s),el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
-const P={files:'M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',file:'M6 3h8l5 5v13H6zM14 3v5h5',terminal:'M4 17l6-5-6-5M12 19h8',editor:'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',settings:'M4 7h10M18 7h2M4 17h2M10 17h10M14 5v4M6 15v4',calc:'M6 3h12v18H6zM9 7h6M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01',system:'M4 5h16v11H4zM9 20h6M12 16v4',star:'M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9',up:'M12 19V5M6 11l6-6 6 6',grid:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',list:'M4 6h16M4 12h16M4 18h16',sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M2 12h2M20 12h2'};
+const P={files:'M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',file:'M6 3h8l5 5v13H6zM14 3v5h5',terminal:'M4 17l6-5-6-5M12 19h8',editor:'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',settings:'M4 7h10M18 7h2M4 17h2M10 17h10M14 5v4M6 15v4',calc:'M6 3h12v18H6zM9 7h6M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01',system:'M4 5h16v11H4zM9 20h6M12 16v4',star:'M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9',lock:'M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3',user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',up:'M12 19V5M6 11l6-6 6 6',grid:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',list:'M4 6h16M4 12h16M4 18h16',sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M2 12h2M20 12h2'};
 const ic=n=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n]}"/></svg>`;
 /* ---------- storage (every access guarded) ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('ember:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
@@ -112,7 +120,7 @@ if(kids(parent).some(k=>k.name===name))throw Error(`"${name}" already exists her
 function trash(id){const n=fs[id];if(!n||id==='r'||id==='h'||id==='t')throw Error('That item is protected.');let nm=n.name;while(kids('t').some(k=>k.name===nm))nm+='~';n.o=n.parent;n.name=nm;n.parent='t';saveFs()}
 function purge(id){kids(id).forEach(k=>purge(k.id));delete fs[id]}
 /* ---------- dialogs & menus ---------- */
-function dlg(msg,{input,ok='OK'}={}){return new Promise(res=>{const b=el('div','scrim'),d=el('div','dlg');d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.append(el('p','',msg));let i;if(input!=null){i=el('input');i.value=input;d.append(i)}
+function dlg(msg,{input,ok='OK',type}={}){return new Promise(res=>{const b=el('div','scrim'),d=el('div','dlg');d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.append(el('p','',msg));let i;if(input!=null){i=el('input');i.value=input;if(type){i.type=type;i.autocomplete='off'}d.append(i)}
 const r=el('div','row'),bo=el('button','pri',ok),bc=el('button','','Cancel');r.append(bc,bo);d.append(r);b.append(d);document.body.append(b);const done=v=>{b.remove();res(v)};
 bo.onclick=()=>done(i?i.value:true);bc.onclick=()=>done(null);b.onkeydown=e=>{if(e.key==='Escape')done(null);else if(e.key==='Enter'&&e.target===i)bo.click()};(i||bo).focus();i&&i.select()})}
 function ctx(x,y,items){$('#ctx')?.remove();const m=el('div','pop');m.id='ctx';items.forEach(([l,f])=>{const b=el('button','',l);b.onclick=()=>{m.remove();f()};m.append(b)});document.body.append(m);
@@ -126,7 +134,7 @@ function place(w){const e=w.el;e.style.left=w.x+'px';e.style.top=w.y+'px';e.styl
 function clamp(w){w.w=Math.min(w.w,innerWidth);w.h=Math.min(w.h,innerHeight-BAR);w.x=Math.max(60-w.w,Math.min(w.x,innerWidth-60));w.y=Math.max(0,Math.min(w.y,innerHeight-BAR-34))}
 function openApp(id,o={}){const A=APPS[id];if(!A)throw Error('Unknown app: '+id);
 if(o.file)for(const w of wins.values())if(w.app===id&&w.o.file===o.file){focus(w.id);return w}
-const n=wins.size%6*28,small=innerWidth<720,w={id:++uid,app:id,o,x:50+n,y:30+n,w:A.w,h:A.h,min:false,max:small,z:0};clamp(w);
+const n=wins.size%6*28,small=innerWidth<720,w={id:++uid,app:id,o,x:110+n,y:30+n,w:A.w,h:A.h,min:false,max:small,z:0};clamp(w);
 const e=w.el=el('section','win opening');e.setAttribute('role','dialog');e.setAttribute('aria-label',A.name);
 e.innerHTML='<header class="th"><div class="dots"><button class="dc" aria-label="Close"></button><button class="dm" aria-label="Minimize"></button><button class="dx" aria-label="Maximize"></button></div><span class="ti"></span></header><div class="body"></div><i class="rz r"></i><i class="rz b"></i><i class="rz c"></i>';
 w.body=$('.body',e);w.setTitle=t=>{$('.ti',e).textContent=t};w.setTitle(A.name);
@@ -147,7 +155,7 @@ function focusTop(){const v=[...wins.values()].filter(w=>!w.min).sort((a,b)=>b.z
 function close(id){const w=wins.get(id);if(!w)return;w.dispose&&w.dispose();wins.delete(id);const e=w.el;e.classList.add('closing');setTimeout(()=>e.remove(),S.rm?0:170);if(act===id)focusTop();else bar()}
 addEventListener('resize',()=>wins.forEach(w=>{clamp(w);place(w)}));
 /* ---------- taskbar, launcher, quick settings ---------- */
-$('#lb').innerHTML=ic('star');$('#qb').innerHTML=ic('sun');
+$('#lb').innerHTML=ic('star');$('#qb').innerHTML=ic('sun');$('#kb').innerHTML=ic('lock');$('#kb').onclick=()=>showLock(false);
 function bar(){const run=[...new Set([...wins.values()].map(w=>w.app))],ids=[...PIN,...run.filter(a=>!PIN.includes(a))],box=$('#apps');box.replaceChildren();
 ids.forEach(id=>{const A=APPS[id],ws=[...wins.values()].filter(w=>w.app===id),b=el('button','tk'+(ws.length?' run':'')+(ws.some(w=>w.id===act)?' act':''));b.innerHTML=ic(A.icon);b.title=A.name;b.setAttribute('aria-label',A.name+(ws.length?' (running)':''));
 b.onclick=()=>{if(!ws.length)return openApp(id);const top=ws.sort((a,b)=>b.z-a.z)[0];if(top.id===act&&!top.min){top.min=true;place(top);focusTop()}else focus(top.id)};box.append(b)})}
@@ -166,7 +174,7 @@ function drawQ(){Q.replaceChildren();const t=el('button','',S.theme==='dark'?'Sw
 t.onclick=()=>{set('theme',S.theme==='dark'?'light':'dark');drawQ()};m.onclick=()=>{set('rm',!S.rm);drawQ()};s.onclick=()=>{Q.hidden=true;openApp('settings')};Q.append(t,m,s)}
 $('#qb').onclick=e=>{e.stopPropagation();L.hidden=true;Q.hidden=!Q.hidden;if(!Q.hidden)drawQ()};
 addEventListener('pointerdown',e=>{if(!e.target.closest('#launch,#qs,#lb,#qb')){L.hidden=true;Q.hidden=true}});
-addEventListener('keydown',e=>{if(e.altKey&&e.code==='Space'){e.preventDefault();toggleL()}else if(e.altKey&&e.key.toLowerCase()==='w'&&act){e.preventDefault();close(act)}});
+addEventListener('keydown',e=>{if(document.body.classList.contains('locked'))return;if(e.altKey&&e.code==='Space'){e.preventDefault();toggleL()}else if(e.altKey&&e.key.toLowerCase()==='w'&&act){e.preventDefault();close(act)}else if(e.altKey&&e.key.toLowerCase()==='l'){e.preventDefault();showLock(false)}});
 function tick(){const d=new Date(),c=$('#clock');c.innerHTML='';c.append(el('div','',d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:!S.h24})),el('div','dim',d.toLocaleDateString([],{day:'numeric',month:'short'})));c.lastChild.style.color='var(--dim)'}
 setInterval(tick,5000);
 /* ---------- app: files ---------- */
@@ -196,7 +204,7 @@ let cwd='h';const hist=[];let hi=0;c.classList.add('term');c.innerHTML='<div cla
 const out=$('.out',c),inp=$('input',c),ps=$('.ps',c),pr=(t,k='')=>{out.append(el('div',k,t));c.scrollTop=1e9},prompt=()=>ps.textContent=path(cwd)+' ›';
 const split=p=>{const i=p.lastIndexOf('/'),d=i<0?cwd:find(p.slice(0,i)||'/',cwd);if(!d||!isDir(d))throw Error('No such directory: '+p.slice(0,i));return[d,p.slice(i+1)]};
 const need=(a,n,u)=>{if(a.length<n)throw Error('usage: '+u)};
-const C={help:()=>pr('Commands: help clear echo date time whoami pwd ls mkdir touch cat cd rm theme settings apps open\nThis is a simulation. It only reads and writes the virtual filesystem.'),
+const C={help:()=>pr('Commands: help clear echo date time whoami pwd ls mkdir touch cat cd rm theme lock settings apps open\nThis is a simulation. It only reads and writes the virtual filesystem.'),
 clear:()=>out.replaceChildren(),echo:a=>pr(a.join(' ')),date:()=>pr(new Date().toLocaleDateString([],{dateStyle:'full'})),time:()=>pr(new Date().toLocaleTimeString()),whoami:()=>pr('guest (virtual user)'),pwd:()=>pr(path(cwd)),
 ls:a=>{const d=a[0]?find(a[0],cwd):cwd;if(!d)throw Error('No such path: '+a[0]);if(!isDir(d))return pr(fs[d].name);const k=kids(d).sort((x,y)=>x.name.localeCompare(y.name));pr(k.length?k.map(n=>n.name+(n.type==='dir'?'/':'')).join('  '):'(empty)','dim')},
 mkdir:a=>{need(a,1,'mkdir <name>');const[d,n]=split(a[0]);mk(d,n,'dir')},touch:a=>{need(a,1,'touch <name>');const[d,n]=split(a[0]);mk(d,n,'file')},
@@ -204,7 +212,7 @@ cat:a=>{need(a,1,'cat <file>');const f=find(a[0],cwd);if(!f)throw Error('No such
 cd:a=>{const d=a[0]?find(a[0],cwd):'h';if(!d)throw Error('No such directory: '+a[0]);if(!isDir(d))throw Error('Not a directory: '+a[0]);cwd=d;prompt()},
 rm:a=>{need(a,1,'rm <path>');const f=find(a[0],cwd);if(!f)throw Error('No such path: '+a[0]);trash(f);pr('Moved to /trash','dim')},
 theme:a=>{const v=a[0]==='toggle'||!a[0]?(S.theme==='dark'?'light':'dark'):a[0];if(!['dark','light'].includes(v))throw Error('usage: theme [dark|light|toggle]');set('theme',v);pr('Theme: '+v)},
-settings:()=>{openApp('settings');pr('Opened Settings','dim')},apps:()=>pr(Object.values(APPS).map(a=>a.id.padEnd(10)+a.desc).join('\n')),
+lock:()=>showLock(false),settings:()=>{openApp('settings');pr('Opened Settings','dim')},apps:()=>pr(Object.values(APPS).map(a=>a.id.padEnd(10)+a.desc).join('\n')),
 open:a=>{need(a,1,'open <app-id>');if(!APPS[a[0]])throw Error('Unknown app: '+a[0]+' (see "apps")');openApp(a[0])}};
 pr('Ember shell — simulated. Type "help" for commands.','dim');prompt();
 inp.onkeydown=e=>{if(e.key==='ArrowUp'&&hist.length){hi=Math.max(0,hi-1);inp.value=hist[hi];e.preventDefault()}else if(e.key==='ArrowDown'){hi=Math.min(hist.length,hi+1);inp.value=hist[hi]||'';e.preventDefault()}
@@ -243,6 +251,9 @@ const sw=el('div');sw.style.cssText='display:flex;gap:6px';[['#d97757','Terracot
 const wp=sel('wp',[['char','Charcoal'],['slate','Slate'],['ember','Ember'],['grid','Grid']]);wp.onchange=()=>set('wp',wp.value);row('Wallpaper',wp);
 sec('Behavior');const rm=el('input');rm.type='checkbox';rm.checked=S.rm;rm.setAttribute('aria-label','Reduce motion');rm.onchange=()=>set('rm',rm.checked);row('Reduce motion',rm);
 const ck=sel('h24',[['true','24-hour'],['false','12-hour']]);ck.onchange=()=>set('h24',ck.value==='true');row('Clock format',ck);
+sec('Security');const cp=el('button','','Change password…');cp.onclick=async()=>{const cur=await dlg('Current password',{input:'',type:'password',ok:'Next'});if(cur==null)return;if(!await checkPw(cur))return notify('Password not changed','The current password is incorrect.','error');const nw=await dlg('New password (at least 4 characters)',{input:'',type:'password',ok:'Change'});if(nw==null)return;if(nw.length<4)return notify('Password not changed','Use at least 4 characters.','error');const h=await hashPw(nw);if(!h)return notify('Password not changed','This browser context cannot hash passwords. Open the site over HTTPS.','error');store.set('pw',h);notify('Password changed','Use it the next time you sign in.','ok')};row('Sign-in password',cp);
+const rp=el('button','','Reset to 1234');rp.onclick=async()=>{const cur=await dlg('Current password',{input:'',type:'password',ok:'Reset'});if(cur==null)return;if(!await checkPw(cur))return notify('Password not reset','The current password is incorrect.','error');store.del('pw');notify('Password reset','The default password is 1234 again.','warn')};row('Default password',rp);
+c.append(el('div','dim','The lock screen is a prototype. It hides the desktop but is not real security: anyone with access to this browser can bypass it.'));
 sec('Data');const rs=el('button','','Reset preferences');rs.onclick=async()=>{if(await dlg('Reset all preferences to defaults? Your files are kept.',{ok:'Reset'})){S={...DEF};apply();draw();notify('Preferences reset','','ok')}};row('Preferences',rs);
 const ef=el('button','','Erase virtual files');ef.onclick=async()=>{if(await dlg('Erase every virtual file, folder and draft? This cannot be undone.',{ok:'Erase'})){fs=seed();saveFs();notify('Virtual files erased','Welcome file restored.','warn')}};row('Virtual filesystem',ef);
 sec('Not yet available');c.append(el('div','dim','Interface scaling and language selection are planned. They are not implemented in this prototype.'))};draw()}});
@@ -256,9 +267,41 @@ const R=[['Product','Ember OS 0.1.0 (prototype)','built-in'],['Browser',n.userAg
 ['Open windows',wins.size,'measured'],['Virtual files',Object.values(fs).filter(x=>x.type==='file').length,'measured']];
 c.replaceChildren();R.forEach(([k,v,t])=>c.append(el('div','dim',k),el('div','',v),el('div','t',t)));const note=el('div','dim','CPU load, GPU, battery and network throughput are not exposed to web pages, so they are not shown or simulated.');note.style.gridColumn='1/-1';c.append(note)};
 draw();const id=setInterval(draw,3000);w.dispose=()=>clearInterval(id)}});
+/* ---------- app: notes ---------- */
+registerApp('notes',{name:'Notes',icon:'editor',w:640,h:420,kw:'memo notebook jot write',desc:'Quick persistent notes',mount(c,w){
+let notes=store.get('notes',[]);if(!Array.isArray(notes))notes=[];notes=notes.filter(n=>n&&typeof n.id==='string'&&typeof n.t==='string'&&typeof n.b==='string'&&typeof n.m==='number');
+let cur=null,q='',sort='m',tm;c.style.flexDirection='row';
+c.innerHTML='<div class="nl"><div class="tb"><input class="q" placeholder="Search notes" aria-label="Search notes" style="flex:1;min-width:0"><button data-a="n" class="pri" aria-label="New note">+</button></div><div class="tb"><select aria-label="Sort notes" style="flex:1"><option value="m">Recently edited</option><option value="t">Title</option></select></div><div class="list" role="listbox" aria-label="Notes"></div></div><div class="ne"></div>';
+const list=$('.list',c),ne=$('.ne',c),sv=()=>store.set('notes',notes);
+const draw=()=>{const items=notes.filter(n=>(n.t+' '+n.b).toLowerCase().includes(q.toLowerCase())).sort((a,b)=>sort==='t'?a.t.localeCompare(b.t):b.m-a.m);list.replaceChildren();
+if(!items.length)list.append(el('div','empty',q?`No notes match “${q}”.`:'No notes yet. Select + to write one.'));
+items.forEach(n=>{const b=el('button','fi'+(n.id===cur?' sel':''));b.style.gridTemplateColumns='1fr';b.setAttribute('role','option');b.append(el('span','',n.t||'Untitled'),el('span','m',n.b.slice(0,40).replace(/\n/g,' ')||'Empty note'));b.onclick=()=>{cur=n.id;draw();edit()};list.append(b)})};
+const edit=()=>{const n=notes.find(x=>x.id===cur);ne.replaceChildren();if(!n){ne.append(el('div','empty','Select a note or create a new one.'));return}
+const ti=el('input'),ta=el('textarea','ed'),del=el('button','','Delete'),bar=el('div','tb');ti.value=n.t;ti.placeholder='Title';ti.style.flex='1';ti.setAttribute('aria-label','Note title');ta.value=n.b;ta.setAttribute('aria-label','Note text');bar.append(ti,del);ne.append(bar,ta);
+const touch=()=>{n.t=ti.value;n.b=ta.value;n.m=Date.now();clearTimeout(tm);tm=setTimeout(()=>{sv();draw()},250)};ti.oninput=ta.oninput=touch;
+del.onclick=async()=>{if(!await dlg(`Delete “${n.t||'Untitled'}”? This cannot be undone.`,{ok:'Delete'}))return;notes=notes.filter(x=>x!==n);cur=null;sv();draw();edit();notify('Note deleted',n.t||'Untitled','ok')}};
+$('[data-a=n]',c).onclick=()=>{const n={id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),t:'',b:'',m:Date.now()};notes.push(n);cur=n.id;sv();draw();edit();$('input',ne).focus()};
+$('.q',c).oninput=e=>{q=e.target.value;draw()};$('select',c).onchange=e=>{sort=e.target.value;draw()};
+w.dispose=()=>{clearTimeout(tm);sv()};draw();edit()}});
 /* ---------- desktop shortcuts, boot ---------- */
-['files','terminal','editor','calculator','system'].forEach(id=>{const A=APPS[id],b=el('button','sc');b.innerHTML=ic(A.icon);b.append(el('span','',A.name));b.ondblclick=()=>openApp(id);b.onkeydown=e=>{if(e.key==='Enter')openApp(id)};b.title='Double-click to open';$('#icons').append(b)});
+['files','terminal','editor','notes','calculator','system'].forEach(id=>{const A=APPS[id],b=el('button','sc');b.innerHTML=ic(A.icon);b.append(el('span','',A.name));b.ondblclick=()=>openApp(id);b.onkeydown=e=>{if(e.key==='Enter')openApp(id)};b.title='Double-click to open';$('#icons').append(b)});
 apply();bar();
+/* ---------- lock screen (prototype, client-side only) ---------- */
+const SALT='ember-os:v1:';
+async function hashPw(p){try{if(globalThis.crypto&&crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(SALT+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}}catch(e){}return null}
+async function checkPw(p){const h=store.get('pw',null);if(typeof h==='string'&&h)return(await hashPw(p))===h;return p==='1234'}
+function showLock(first){if($('#lock'))return;const body=document.body;body.classList.add('locked');$('#desk').inert=true;$('#bar').inert=true;L.hidden=true;Q.hidden=true;
+const m=el('div');m.id='lock';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label','Sign in');
+m.innerHTML='<div class="lw"><header class="th"><div class="dots"><i></i><i></i><i></i></div><span class="ti">login \u2014 ember</span></header><div class="lb" role="log"><div class="out"></div><form class="ln"><span class="ps">guest@ember password:</span><input type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Password for guest"></form></div></div>';
+body.append(m);const out=$('.out',m),lb=$('.lb',m),lw=$('.lw',m),f=$('form',m),inp=$('input',m);let fails=0,wait=0;
+const pr=(t,k='')=>{const d=el('div',k,t);out.append(d);lb.scrollTop=1e9;return d};
+pr('Ember OS 0.1 (prototype) \u2014 sign in','dim');pr('Account: guest. Typing is hidden.','dim');if(!store.get('pw',null))pr('Default password: 1234','dim');pr('');
+lb.onclick=()=>{if(!getSelection().toString())inp.focus()};
+f.onsubmit=async e=>{e.preventDefault();if(wait)return;const v=inp.value;inp.value='';pr('guest@ember password:','dim');if(!v)return;
+if(await checkPw(v)){pr('Welcome, guest.');inp.disabled=true;m.classList.add('off');body.classList.remove('locked');body.classList.add('on');$('#desk').inert=false;$('#bar').inert=false;if(first)openApp('files');else if(act)focus(act);setTimeout(()=>m.remove(),S.rm?0:450);return}
+fails++;pr('Login incorrect','e');lw.classList.remove('bad');void lw.offsetWidth;lw.classList.add('bad');
+if(fails>=3){wait=Math.min(30,(fails-2)*3);inp.disabled=true;const l=pr('','e'),tx=()=>{l.textContent='Too many attempts. Try again in '+wait+'s.'};tx();const t=setInterval(()=>{wait--;if(wait<=0){clearInterval(t);wait=0;l.remove();inp.disabled=false;inp.focus()}else tx()},1000)}};
+inp.focus()}
 const lines=['mounting virtual filesystem … ok','loading preferences … ok','registering '+Object.keys(APPS).length+' apps … ok','starting desktop'],bl=$('#bl');
-let li=0;const step=()=>{if(li<lines.length){bl.textContent+=lines[li++]+'\n';setTimeout(step,S.rm?0:260)}else{document.body.classList.add('on');$('#boot').classList.add('off');setTimeout(()=>{$('#boot').remove();openApp('files')},S.rm?0:400)}};step();
+let li=0;const step=()=>{if(li<lines.length){bl.textContent+=lines[li++]+'\n';setTimeout(step,S.rm?0:260)}else{$('#boot').classList.add('off');showLock(true);setTimeout(()=>$('#boot').remove(),S.rm?0:500)}};step();
 </script></body></html>
