@@ -7,7 +7,7 @@
 :root{--bg:#1c1c1b;--s1:#242423;--s2:#2e2e2c;--bd:#3e3e3a;--tx:#d9d6cf;--dim:#8f8c85;--ac:#d97757;--on:#1c1c1b;--f:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;--r:6px;--e:cubic-bezier(.2,.8,.2,1);--d:170ms;--sh:0 14px 40px rgba(0,0,0,.45);--ok:#5fb760;--wn:#e5b94a;--er:#e5635a;--zbar:9000;--zpop:9500;--zdlg:9700;--ztoast:9800;color-scheme:dark}
 :root[data-theme=light]{--bg:#eeece6;--s1:#f7f6f2;--s2:#e5e2da;--bd:#cdc9bf;--tx:#2a2926;--dim:#6d6962;--sh:0 14px 40px rgba(0,0,0,.18);color-scheme:light}
 *{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden}
-body{font:13px/1.5 var(--f);color:var(--tx);background:var(--bg);transition:background var(--d),color var(--d)}
+body{font:var(--fs,13px)/1.5 var(--f);color:var(--tx);background:var(--bg);transition:background var(--d),color var(--d)}
 button,input,select,textarea{font:inherit;color:inherit}
 button{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:3px 9px;cursor:pointer;transition:background var(--d),transform var(--d) var(--e)}
 button:hover{background:color-mix(in srgb,var(--tx) 10%,var(--s2))}button:active{transform:scale(.97)}
@@ -57,8 +57,8 @@ textarea.ed{flex:1;resize:none;border:0;border-radius:0;padding:10px;line-height
 #lock .lw{width:560px;max-width:100%;height:min(320px,90vh);display:flex;flex-direction:column;background:#161615;border:1px solid var(--bd);border-radius:10px;box-shadow:var(--sh);overflow:hidden;animation:pop var(--d) var(--e)}
 #lock .lw .th{cursor:default}#lock .dots i{width:12px;height:12px;border-radius:50%;background:#807d76}
 #lock .lb{flex:1;overflow:auto;padding:10px;color:#d9d6cf;word-break:break-word;cursor:text}#lock .lb .dim{color:#8f8c85}#lock .lb .e{color:var(--er)}
-#lock .ln{display:flex;gap:8px}#lock .ps{color:var(--ac);white-space:nowrap}
-#lock input{flex:1;min-width:0;border:0;background:none;padding:0;outline:0;color:transparent;caret-color:#d9d6cf}
+#lock .ln{display:flex;align-items:center;position:relative}#lock .ps{color:var(--ac);white-space:nowrap;margin-right:8px}
+#lock input{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;border:0;padding:0}#lock .mk{color:#d9d6cf;white-space:pre}#lock .cur{display:inline-block;width:.6em;height:1.15em;margin-left:1px;background:#d9d6cf;animation:blink 1s steps(1) infinite}@keyframes blink{50%{opacity:0}}
 #lock .lw.bad{animation:shake .3s}@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 #bar{position:fixed;left:0;right:0;bottom:0;height:calc(44px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;gap:4px;padding-left:6px;padding-right:6px;background:var(--s1);border-top:1px solid var(--bd);z-index:var(--zbar)}
 #apps{display:flex;gap:2px;flex:1;overflow-x:auto}
@@ -81,7 +81,7 @@ textarea.ed{flex:1;resize:none;border:0;border-radius:0;padding:10px;line-height
 #boot{position:fixed;inset:0;background:#161615;color:#d9d6cf;z-index:99999;display:grid;place-content:center;gap:14px;transition:opacity .5s var(--e)}#boot.off{opacity:0;pointer-events:none}
 #boot h1{margin:0;font-size:22px;font-weight:600}#boot h1 i{color:#d97757;font-style:normal;display:inline-block;animation:spin 3s linear infinite}#boot pre{margin:0;color:#8f8c85;min-height:5.2em;font:inherit}
 @keyframes spin{to{transform:rotate(360deg)}}.vh{position:absolute;left:-9999px}
-:root[data-rm="1"] *,:root[data-rm="1"] *::before{animation-duration:.01ms!important;transition-duration:.01ms!important}
+:root[data-rm="1"] *,:root[data-rm="1"] *::before{animation-duration:.01ms!important;transition-duration:.01ms!important}:root[data-rm="1"] .cur,:root[data-rm="1"] #boot h1 i{animation:none!important}
 @media(max-width:720px){.fi{grid-template-columns:20px 1fr}.fi .m{display:none}}
 </style></head><body>
 <div id="boot"><h1><i>✱</i> Ember OS</h1><pre id="bl"></pre></div>
@@ -104,15 +104,15 @@ del(k){try{localStorage.removeItem('ember:'+k)}catch(e){}}};
 function notify(title,msg='',type='info'){const t=el('div','toast '+type);t.append(el('b','',title),el('span','',msg));t.setAttribute('role',type==='error'?'alert':'status');
 const go=()=>{t.classList.add('out');setTimeout(()=>t.remove(),180)};t.onclick=go;$('#toasts').prepend(t);setTimeout(go,4500)}
 /* ---------- settings ---------- */
-const DEF={accent:'#d97757',theme:'dark',wp:'char',h24:true,rm:matchMedia('(prefers-reduced-motion:reduce)').matches};
+const DEF={accent:'#d97757',theme:'dark',wp:'char',h24:true,fs:13,fullscreen:true,rm:matchMedia('(prefers-reduced-motion:reduce)').matches};
 let S={...DEF,...store.get('settings',{})};
-function apply(){const r=document.documentElement;r.style.setProperty('--ac',S.accent);r.dataset.theme=S.theme;r.dataset.rm=S.rm?1:0;document.body.dataset.wp=S.wp;store.set('settings',S);tick()}
+function apply(){const r=document.documentElement;r.style.setProperty('--ac',S.accent);r.style.setProperty('--fs',([12,13,15,17].includes(+S.fs)?+S.fs:13)+'px');r.dataset.theme=S.theme;r.dataset.rm=S.rm?1:0;document.body.dataset.wp=S.wp;store.set('settings',S);tick()}
 const set=(k,v)=>{S[k]=v;apply()};
 /* ---------- virtual filesystem (not the real disk) ---------- */
 const seed=()=>{const m=Date.now(),d=(id,name,parent)=>({id,name,type:'dir',parent,m});return{r:{id:'r',name:'/',type:'dir',parent:null,m},h:d('h','home','r'),d:d('d','documents','h'),t:d('t','trash','r'),
 w:{id:'w',name:'welcome.txt',type:'file',parent:'h',m,content:'Welcome to Ember OS.\n\nThis is a browser-based desktop. Files live in a virtual filesystem stored in this browser (localStorage). Nothing here touches your real disk.\n\nTry: open Terminal and type "help".'}}};
 let fs=store.get('fs',null);if(!fs||!fs.r||!fs.h||!fs.t)fs=seed();
-const saveFs=()=>store.set('fs',fs),kids=p=>Object.values(fs).filter(n=>n.parent===p),isDir=id=>fs[id]&&fs[id].type==='dir';
+const saveFs=()=>{const r=store.set('fs',fs);document.dispatchEvent(new Event('fschange'));return r},kids=p=>Object.values(fs).filter(n=>n.parent===p),isDir=id=>fs[id]&&fs[id].type==='dir';
 const path=id=>{const a=[];for(let n=fs[id];n&&n.parent;n=fs[n.parent])a.unshift(n.name);return'/'+a.join('/')};
 function find(p,cwd){let n=p.startsWith('/')?'r':cwd;for(const s of p.split('/')){if(!s||s==='.')continue;if(s==='..'){n=fs[n].parent||n;continue}const k=kids(n).find(x=>x.name===s);if(!k)return null;n=k.id}return n}
 function mk(parent,name,type,content=''){name=(name||'').trim();if(!name)throw Error('Name cannot be empty.');if(/[\/\\]/.test(name)||name.length>64||name==='.'||name==='..')throw Error('Names cannot contain slashes or exceed 64 characters.');
@@ -123,9 +123,10 @@ function purge(id){kids(id).forEach(k=>purge(k.id));delete fs[id]}
 function dlg(msg,{input,ok='OK',type}={}){return new Promise(res=>{const b=el('div','scrim'),d=el('div','dlg');d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.append(el('p','',msg));let i;if(input!=null){i=el('input');i.value=input;if(type){i.type=type;i.autocomplete='off'}d.append(i)}
 const r=el('div','row'),bo=el('button','pri',ok),bc=el('button','','Cancel');r.append(bc,bo);d.append(r);b.append(d);document.body.append(b);const done=v=>{b.remove();res(v)};
 bo.onclick=()=>done(i?i.value:true);bc.onclick=()=>done(null);b.onkeydown=e=>{if(e.key==='Escape')done(null);else if(e.key==='Enter'&&e.target===i)bo.click()};(i||bo).focus();i&&i.select()})}
-function ctx(x,y,items){$('#ctx')?.remove();const m=el('div','pop');m.id='ctx';items.forEach(([l,f])=>{const b=el('button','',l);b.onclick=()=>{m.remove();f()};m.append(b)});document.body.append(m);
-m.style.left=Math.min(x,innerWidth-170)+'px';m.style.top=Math.min(y,innerHeight-items.length*30-60)+'px';m.style.transformOrigin='top left';m.firstChild?.focus();
-setTimeout(()=>addEventListener('pointerdown',()=>m.remove(),{once:true}),0)}
+function ctx(x,y,items){$('#ctx')?.remove();const m=el('div','pop');m.id='ctx';items.forEach(([l,f])=>{const b=el('button','',l);b.setAttribute('role','menuitem');b.onclick=()=>{m.remove();f()};m.append(b)});document.body.append(m);
+m.style.left=Math.min(x,innerWidth-260)+'px';m.style.top=Math.min(y,innerHeight-items.length*30-60)+'px';m.style.transformOrigin='top left';m.setAttribute('role','menu');m.firstChild?.focus();
+m.onkeydown=e=>{const b=[...m.children],i=b.indexOf(document.activeElement);if(e.key==='Escape')m.remove();else if(e.key==='ArrowDown'){b[(i+1)%b.length].focus();e.preventDefault()}else if(e.key==='ArrowUp'){b[(i+b.length-1)%b.length].focus();e.preventDefault()}};
+const away=e=>{if(m.contains(e.target))return;m.remove();removeEventListener('pointerdown',away,true)};setTimeout(()=>addEventListener('pointerdown',away,true),0)}
 /* ---------- window manager ---------- */
 const APPS={},wins=new Map();let zc=10,act=null,uid=0;const PIN=['files','terminal','editor','settings'];
 const registerApp=(id,a)=>{APPS[id]={id,...a}};
@@ -158,7 +159,7 @@ addEventListener('resize',()=>wins.forEach(w=>{clamp(w);place(w)}));
 $('#lb').innerHTML=ic('star');$('#qb').innerHTML=ic('sun');$('#kb').innerHTML=ic('lock');$('#kb').onclick=()=>showLock(false);
 function bar(){const run=[...new Set([...wins.values()].map(w=>w.app))],ids=[...PIN,...run.filter(a=>!PIN.includes(a))],box=$('#apps');box.replaceChildren();
 ids.forEach(id=>{const A=APPS[id],ws=[...wins.values()].filter(w=>w.app===id),b=el('button','tk'+(ws.length?' run':'')+(ws.some(w=>w.id===act)?' act':''));b.innerHTML=ic(A.icon);b.title=A.name;b.setAttribute('aria-label',A.name+(ws.length?' (running)':''));
-b.onclick=()=>{if(!ws.length)return openApp(id);const top=ws.sort((a,b)=>b.z-a.z)[0];if(top.id===act&&!top.min){top.min=true;place(top);focusTop()}else focus(top.id)};box.append(b)})}
+b.onclick=()=>{if(!ws.length)return openApp(id);const top=ws.sort((a,b)=>b.z-a.z)[0];if(top.id===act&&!top.min){top.min=true;place(top);focusTop()}else focus(top.id)};b.oncontextmenu=ev=>{ev.preventDefault();ctx(ev.clientX,ev.clientY,[['New window',()=>openApp(id)],...(ws.length?[['Close all windows',()=>ws.forEach(x=>close(x.id))]]:[])])};box.append(b)})}
 const L=$('#launch');let lsel=0;
 function drawL(q=''){const list=Object.values(APPS).filter(a=>(a.name+' '+a.kw).toLowerCase().includes(q.toLowerCase()));lsel=Math.min(lsel,Math.max(0,list.length-1));
 const box=$('.lst',L);box.replaceChildren();if(!list.length)box.append(el('div','empty','No apps match “'+q+'”.'));
@@ -197,14 +198,14 @@ const del=async n=>{const perm=cwd==='t';if(!await dlg(perm?`Permanently delete 
 try{if(perm){purge(n.id);saveFs()}else trash(n.id);sel=null;draw();notify(perm?'Deleted':'Moved to trash',n.name,'ok')}catch(e){notify('Delete failed',e.message,'error')}};
 const create=async t=>{const v=await dlg(t==='dir'?'New folder name':'New file name',{input:t==='dir'?'new-folder':'untitled.txt',ok:'Create'});if(v==null)return;try{sel=mk(cwd,v,t);draw()}catch(e){notify('Could not create',e.message,'error')}};
 c.onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a;if(a==='up'){cwd=fs[cwd].parent||cwd;draw()}else if(a==='nd')create('dir');else if(a==='nf')create('file');else if(a==='v'){view=view==='list'?'grid':'list';store.set('fview',view);draw()}};
-$('.q',c).oninput=e=>{q=e.target.value;draw()};$('select',c).onchange=e=>{sort=e.target.value;draw()};draw()}});
+$('.q',c).oninput=e=>{q=e.target.value;draw()};$('select',c).onchange=e=>{sort=e.target.value;draw()};const onfs=()=>draw();document.addEventListener('fschange',onfs);w.dispose=()=>document.removeEventListener('fschange',onfs);draw()}});
 /* ---------- app: terminal (explicit parser, no eval, virtual env only) ---------- */
 registerApp('terminal',{name:'Terminal',icon:'terminal',w:620,h:400,kw:'shell command cli',desc:'Simulated shell',mount(c,w){
 let cwd='h';const hist=[];let hi=0;c.classList.add('term');c.innerHTML='<div class="out"></div><div class="ln"><span class="ps"></span><input spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="Terminal input"></div>';
 const out=$('.out',c),inp=$('input',c),ps=$('.ps',c),pr=(t,k='')=>{out.append(el('div',k,t));c.scrollTop=1e9},prompt=()=>ps.textContent=path(cwd)+' ›';
 const split=p=>{const i=p.lastIndexOf('/'),d=i<0?cwd:find(p.slice(0,i)||'/',cwd);if(!d||!isDir(d))throw Error('No such directory: '+p.slice(0,i));return[d,p.slice(i+1)]};
 const need=(a,n,u)=>{if(a.length<n)throw Error('usage: '+u)};
-const C={help:()=>pr('Commands: help clear echo date time whoami pwd ls mkdir touch cat cd rm theme lock settings apps open\nThis is a simulation. It only reads and writes the virtual filesystem.'),
+const C={help:()=>pr('Commands: help clear echo date time whoami pwd ls mkdir touch cat cd rm theme lock fullscreen settings apps open\nThis is a simulation. It only reads and writes the virtual filesystem.'),
 clear:()=>out.replaceChildren(),echo:a=>pr(a.join(' ')),date:()=>pr(new Date().toLocaleDateString([],{dateStyle:'full'})),time:()=>pr(new Date().toLocaleTimeString()),whoami:()=>pr('guest (virtual user)'),pwd:()=>pr(path(cwd)),
 ls:a=>{const d=a[0]?find(a[0],cwd):cwd;if(!d)throw Error('No such path: '+a[0]);if(!isDir(d))return pr(fs[d].name);const k=kids(d).sort((x,y)=>x.name.localeCompare(y.name));pr(k.length?k.map(n=>n.name+(n.type==='dir'?'/':'')).join('  '):'(empty)','dim')},
 mkdir:a=>{need(a,1,'mkdir <name>');const[d,n]=split(a[0]);mk(d,n,'dir')},touch:a=>{need(a,1,'touch <name>');const[d,n]=split(a[0]);mk(d,n,'file')},
@@ -212,7 +213,7 @@ cat:a=>{need(a,1,'cat <file>');const f=find(a[0],cwd);if(!f)throw Error('No such
 cd:a=>{const d=a[0]?find(a[0],cwd):'h';if(!d)throw Error('No such directory: '+a[0]);if(!isDir(d))throw Error('Not a directory: '+a[0]);cwd=d;prompt()},
 rm:a=>{need(a,1,'rm <path>');const f=find(a[0],cwd);if(!f)throw Error('No such path: '+a[0]);trash(f);pr('Moved to /trash','dim')},
 theme:a=>{const v=a[0]==='toggle'||!a[0]?(S.theme==='dark'?'light':'dark'):a[0];if(!['dark','light'].includes(v))throw Error('usage: theme [dark|light|toggle]');set('theme',v);pr('Theme: '+v)},
-lock:()=>showLock(false),settings:()=>{openApp('settings');pr('Opened Settings','dim')},apps:()=>pr(Object.values(APPS).map(a=>a.id.padEnd(10)+a.desc).join('\n')),
+fullscreen:()=>{(fsOn()?leaveFull():goFull()).catch(e=>pr((e&&e.message)||'Full screen was blocked by the browser.','err'))},lock:()=>showLock(false),settings:()=>{openApp('settings');pr('Opened Settings','dim')},apps:()=>pr(Object.values(APPS).map(a=>a.id.padEnd(10)+a.desc).join('\n')),
 open:a=>{need(a,1,'open <app-id>');if(!APPS[a[0]])throw Error('Unknown app: '+a[0]+' (see "apps")');openApp(a[0])}};
 pr('Ember shell — simulated. Type "help" for commands.','dim');prompt();
 inp.onkeydown=e=>{if(e.key==='ArrowUp'&&hist.length){hi=Math.max(0,hi-1);inp.value=hist[hi];e.preventDefault()}else if(e.key==='ArrowDown'){hi=Math.min(hist.length,hi+1);inp.value=hist[hi]||'';e.preventDefault()}
@@ -248,17 +249,19 @@ c.classList.add('set');const draw=()=>{c.replaceChildren();const sec=t=>c.append
 sel=(k,opts)=>{const s=el('select');s.setAttribute('aria-label',k);opts.forEach(([v,l])=>{const o=el('option','',l);o.value=v;s.append(o)});s.value=String(S[k]);return s};
 sec('Appearance');const th=sel('theme',[['dark','Dark'],['light','Light']]);th.onchange=()=>{set('theme',th.value)};row('Theme',th);
 const sw=el('div');sw.style.cssText='display:flex;gap:6px';[['#d97757','Terracotta'],['#6a9bd8','Blue'],['#5fb760','Green'],['#a78bdb','Violet'],['#e5b94a','Amber']].forEach(([v,n])=>{const b=el('button','sw');b.style.background=v;b.setAttribute('aria-label',n);b.setAttribute('aria-pressed',S.accent===v);b.onclick=()=>{set('accent',v);draw()};sw.append(b)});row('Accent color',sw);
-const wp=sel('wp',[['char','Charcoal'],['slate','Slate'],['ember','Ember'],['grid','Grid']]);wp.onchange=()=>set('wp',wp.value);row('Wallpaper',wp);
+const wp=sel('wp',[['char','Charcoal'],['slate','Slate'],['ember','Ember'],['grid','Grid']]);wp.onchange=()=>set('wp',wp.value);row('Wallpaper',wp);const fz=sel('fs',[['12','Small'],['13','Default'],['15','Large'],['17','Extra large']]);fz.onchange=()=>set('fs',+fz.value);row('Text size',fz);
 sec('Behavior');const rm=el('input');rm.type='checkbox';rm.checked=S.rm;rm.setAttribute('aria-label','Reduce motion');rm.onchange=()=>set('rm',rm.checked);row('Reduce motion',rm);
-const ck=sel('h24',[['true','24-hour'],['false','12-hour']]);ck.onchange=()=>set('h24',ck.value==='true');row('Clock format',ck);
+const ck=sel('h24',[['true','24-hour'],['false','12-hour']]);ck.onchange=()=>set('h24',ck.value==='true');row('Clock format',ck);const fa=el('input');fa.type='checkbox';fa.checked=S.fullscreen;fa.setAttribute('aria-label','Start in full screen');fa.onchange=()=>set('fullscreen',fa.checked);row('Start in full screen',fa);
+const fb=el('button','',fsOn()?'Exit full screen':'Enter full screen');fb.onclick=async()=>{try{if(fsOn())await leaveFull();else await goFull()}catch(e){notify('Full screen unavailable',(e&&e.message)||'The browser blocked the request.','warn')}draw()};row('Full screen now',fb);
+c.append(el('div','dim','Browsers only allow full screen after you click or press a key, so a page cannot switch it on by itself when it loads. Ember OS enters full screen on your first key press or click, for example when you type the password. Press Esc to leave.'));
 sec('Security');const cp=el('button','','Change password…');cp.onclick=async()=>{const cur=await dlg('Current password',{input:'',type:'password',ok:'Next'});if(cur==null)return;if(!await checkPw(cur))return notify('Password not changed','The current password is incorrect.','error');const nw=await dlg('New password (at least 4 characters)',{input:'',type:'password',ok:'Change'});if(nw==null)return;if(nw.length<4)return notify('Password not changed','Use at least 4 characters.','error');const h=await hashPw(nw);if(!h)return notify('Password not changed','This browser context cannot hash passwords. Open the site over HTTPS.','error');store.set('pw',h);notify('Password changed','Use it the next time you sign in.','ok')};row('Sign-in password',cp);
 const rp=el('button','','Reset to 1234');rp.onclick=async()=>{const cur=await dlg('Current password',{input:'',type:'password',ok:'Reset'});if(cur==null)return;if(!await checkPw(cur))return notify('Password not reset','The current password is incorrect.','error');store.del('pw');notify('Password reset','The default password is 1234 again.','warn')};row('Default password',rp);
 c.append(el('div','dim','The lock screen is a prototype. It hides the desktop but is not real security: anyone with access to this browser can bypass it.'));
 sec('Data');const rs=el('button','','Reset preferences');rs.onclick=async()=>{if(await dlg('Reset all preferences to defaults? Your files are kept.',{ok:'Reset'})){S={...DEF};apply();draw();notify('Preferences reset','','ok')}};row('Preferences',rs);
 const ef=el('button','','Erase virtual files');ef.onclick=async()=>{if(await dlg('Erase every virtual file, folder and draft? This cannot be undone.',{ok:'Erase'})){fs=seed();saveFs();notify('Virtual files erased','Welcome file restored.','warn')}};row('Virtual filesystem',ef);
-sec('Not yet available');c.append(el('div','dim','Interface scaling and language selection are planned. They are not implemented in this prototype.'))};draw()}});
+sec('Not yet available');c.append(el('div','dim','Full interface scaling and language selection are planned. For now only the text size can be changed.'))};draw()}});
 /* ---------- app: system ---------- */
-registerApp('system',{name:'System',icon:'system',w:620,h:460,kw:'monitor about info storage diagnostics',desc:'Browser info and diagnostics',mount(c,w){
+registerApp('system',{name:'System',icon:'system',w:620,h:460,kw:'monitor diagnostics hardware browser',desc:'Browser info and diagnostics',mount(c,w){
 c.classList.add('kv');const fmt=b=>b>1048576?(b/1048576).toFixed(1)+' MB':(b/1024).toFixed(1)+' KB';
 const draw=async()=>{const n=navigator;let st='unavailable';try{const e=await n.storage.estimate();st=`${fmt(e.usage)} used of ~${fmt(e.quota)} quota`}catch(e){}
 const R=[['Product','Ember OS 0.1.0 (prototype)','built-in'],['Browser',n.userAgent,'measured'],['Platform',n.userAgentData?.platform||n.platform||'unavailable','measured'],['Languages',(n.languages||[]).join(', ')||'unavailable','measured'],
@@ -283,21 +286,38 @@ del.onclick=async()=>{if(!await dlg(`Delete “${n.t||'Untitled'}”? This canno
 $('[data-a=n]',c).onclick=()=>{const n={id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),t:'',b:'',m:Date.now()};notes.push(n);cur=n.id;sv();draw();edit();$('input',ne).focus()};
 $('.q',c).oninput=e=>{q=e.target.value;draw()};$('select',c).onchange=e=>{sort=e.target.value;draw()};
 w.dispose=()=>{clearTimeout(tm);sv()};draw();edit()}});
+/* ---------- app: about ---------- */
+registerApp('about',{name:'About',icon:'star',w:460,h:400,kw:'version info features product storage',desc:'Version and feature overview',mount(c){
+c.classList.add('set');let used=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('ember:'))used+=k.length+(localStorage.getItem(k)||'').length}}catch(e){used=-1}
+const feats=['Windowed desktop with launcher and taskbar','Files with a virtual filesystem and trash','Terminal simulation (no real shell)','Editor with draft recovery','Notes with search and sorting','Calculator with a safe parser','Settings: theme, accent, wallpaper, text size','Terminal-style lock screen (prototype)'],ul=el('ul');ul.style.cssText='margin:0;padding-left:18px';feats.forEach(f=>ul.append(el('li','',f)));
+c.append(el('h3','','Ember OS'),el('div','','Version 0.1.0 (prototype)'),el('h3','','Features'),ul,el('h3','','Storage (measured, approximate)'),el('div','',used<0?'unavailable':(used*2/1024).toFixed(1)+' KB used by Ember OS in this browser'),el('h3','','Limits'),el('div','dim','Runs entirely in your browser. Files are virtual and kept in localStorage. The lock screen is not real security.'))}});
+/* ---------- desktop context menu ---------- */
+function newTextFile(){let n='untitled.txt',i=1;while(kids('h').some(k=>k.name===n))n='untitled-'+(++i)+'.txt';try{const id=mk('h',n,'file');openApp('editor',{file:id});notify('File created','/home/'+n,'ok')}catch(e){notify('Could not create file',e.message,'error')}}
+function deskMenu(x,y){const wp=[['char','Charcoal'],['slate','Slate'],['ember','Ember'],['grid','Grid']].map(([v,n])=>[(S.wp===v?'✓ ':'   ')+'Wallpaper: '+n,()=>set('wp',v)]);
+ctx(x,y,[['New text file',newTextFile],['Open Terminal',()=>openApp('terminal')],['Open Files',()=>openApp('files')],...wp,[S.theme==='dark'?'Switch to light theme':'Switch to dark theme',()=>set('theme',S.theme==='dark'?'light':'dark')],['Settings',()=>openApp('settings')],['Lock screen',()=>showLock(false)]])}
+$('#desk').addEventListener('contextmenu',e=>{if(e.target.closest('.win,.sc'))return;e.preventDefault();deskMenu(e.clientX,e.clientY)});
 /* ---------- desktop shortcuts, boot ---------- */
-['files','terminal','editor','notes','calculator','system'].forEach(id=>{const A=APPS[id],b=el('button','sc');b.innerHTML=ic(A.icon);b.append(el('span','',A.name));b.ondblclick=()=>openApp(id);b.onkeydown=e=>{if(e.key==='Enter')openApp(id)};b.title='Double-click to open';$('#icons').append(b)});
+['files','terminal','editor','notes','calculator','system'].forEach(id=>{const A=APPS[id],b=el('button','sc');b.innerHTML=ic(A.icon);b.append(el('span','',A.name));b.ondblclick=()=>openApp(id);b.onkeydown=e=>{if(e.key==='Enter')openApp(id)};b.title='Double-click to open';b.oncontextmenu=e=>{e.preventDefault();ctx(e.clientX,e.clientY,[['Open',()=>openApp(id)]])};$('#icons').append(b)});
 apply();bar();
+/* ---------- full screen (browsers require a click or key press first) ---------- */
+const fsOn=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+function goFull(){const r=document.documentElement,f=r.requestFullscreen||r.webkitRequestFullscreen;if(!f)return Promise.reject(new Error('This browser does not support full screen.'));try{return Promise.resolve(f.call(r))}catch(e){return Promise.reject(e)}}
+function leaveFull(){const f=document.exitFullscreen||document.webkitExitFullscreen;return f?Promise.resolve(f.call(document)):Promise.resolve()}
+let autoTried=false;
+const autoFull=()=>{if(autoTried||!S.fullscreen||fsOn())return;autoTried=true;goFull().catch(e=>notify('Full screen blocked',(e&&e.message)||'The browser did not allow full screen. Use Settings to try again.','warn'))};
+addEventListener('keydown',e=>{if(e.key!=='Escape')autoFull()},true);addEventListener('pointerdown',autoFull,true);
 /* ---------- lock screen (prototype, client-side only) ---------- */
 const SALT='ember-os:v1:';
 async function hashPw(p){try{if(globalThis.crypto&&crypto.subtle){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(SALT+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}}catch(e){}return null}
 async function checkPw(p){const h=store.get('pw',null);if(typeof h==='string'&&h)return(await hashPw(p))===h;return p==='1234'}
 function showLock(first){if($('#lock'))return;const body=document.body;body.classList.add('locked');$('#desk').inert=true;$('#bar').inert=true;L.hidden=true;Q.hidden=true;
 const m=el('div');m.id='lock';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label','Sign in');
-m.innerHTML='<div class="lw"><header class="th"><div class="dots"><i></i><i></i><i></i></div><span class="ti">login \u2014 ember</span></header><div class="lb" role="log"><div class="out"></div><form class="ln"><span class="ps">guest@ember password:</span><input type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Password for guest"></form></div></div>';
+m.innerHTML='<div class="lw"><header class="th"><div class="dots"><i></i><i></i><i></i></div><span class="ti">login \u2014 ember</span></header><div class="lb" role="log"><div class="out"></div><form class="ln"><span class="ps">guest@ember password:</span><span class="mk"></span><span class="cur"></span><input type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Password for guest"></form></div></div>';
 body.append(m);const out=$('.out',m),lb=$('.lb',m),lw=$('.lw',m),f=$('form',m),inp=$('input',m);let fails=0,wait=0;
 const pr=(t,k='')=>{const d=el('div',k,t);out.append(d);lb.scrollTop=1e9;return d};
-pr('Ember OS 0.1 (prototype) \u2014 sign in','dim');pr('Account: guest. Typing is hidden.','dim');if(!store.get('pw',null))pr('Default password: 1234','dim');pr('');
-lb.onclick=()=>{if(!getSelection().toString())inp.focus()};
-f.onsubmit=async e=>{e.preventDefault();if(wait)return;const v=inp.value;inp.value='';pr('guest@ember password:','dim');if(!v)return;
+pr('Ember OS 0.1 (prototype) \u2014 sign in','dim');pr('Account: guest. Typing is masked.','dim');if(!store.get('pw',null))pr('Default password: 1234','dim');if(S.fullscreen&&!fsOn())pr('Full screen starts with your first key press.','dim');pr('');
+lb.onclick=()=>{if(!getSelection().toString())inp.focus()};const mk=$('.mk',m);inp.oninput=()=>{mk.textContent='*'.repeat(inp.value.length)};
+f.onsubmit=async e=>{e.preventDefault();if(wait)return;const v=inp.value;inp.value='';pr('guest@ember password:'+(v?' '+'*'.repeat(v.length):''),'dim');mk.textContent='';if(!v)return;
 if(await checkPw(v)){pr('Welcome, guest.');inp.disabled=true;m.classList.add('off');body.classList.remove('locked');body.classList.add('on');$('#desk').inert=false;$('#bar').inert=false;if(first)openApp('files');else if(act)focus(act);setTimeout(()=>m.remove(),S.rm?0:450);return}
 fails++;pr('Login incorrect','e');lw.classList.remove('bad');void lw.offsetWidth;lw.classList.add('bad');
 if(fails>=3){wait=Math.min(30,(fails-2)*3);inp.disabled=true;const l=pr('','e'),tx=()=>{l.textContent='Too many attempts. Try again in '+wait+'s.'};tx();const t=setInterval(()=>{wait--;if(wait<=0){clearInterval(t);wait=0;l.remove();inp.disabled=false;inp.focus()}else tx()},1000)}};
