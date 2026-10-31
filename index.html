@@ -75,7 +75,7 @@ textarea.ed{flex:1;resize:none;border:0;border-radius:0;padding:10px;line-height
 .tk{position:relative;background:none;border:0;padding:6px 9px}.tk::after{content:"";position:absolute;bottom:2px;left:50%;width:0;height:2px;border-radius:2px;background:var(--dim);transform:translateX(-50%);transition:width var(--d) var(--e)}
 .tk.run::after{width:6px}.tk.act::after{width:16px;background:var(--ac)}.tk:hover{transform:translateY(-1px)}.tk svg{width:18px;height:18px}
 #clock{padding:3px 8px;background:none;border:0;text-align:right;font-size:12px;line-height:1.2}
-.pop{position:fixed;background:var(--s1);border:1px solid var(--bd);border-radius:10px;box-shadow:var(--sh);z-index:var(--zpop);transform-origin:bottom left;animation:pop var(--d) var(--e)}.pop[hidden]{display:none}
+.pop{position:fixed;background:var(--s1);border:1px solid var(--bd);border-radius:10px;box-shadow:var(--sh);z-index:var(--zpop);transform-origin:bottom left;animation:pop var(--d) var(--e)}.pop[hidden],#qs[hidden]{display:none}
 #launch{left:6px;bottom:52px;width:340px;max-width:calc(100vw - 12px);padding:8px}#launch input{width:100%;margin-bottom:6px}
 #launch button{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;padding:6px 8px}#launch button.hl{background:color-mix(in srgb,var(--ac) 20%,transparent)}
 #launch small{color:var(--dim);margin-left:auto}
@@ -455,7 +455,7 @@ const capBtn=el('button'),gear=el('button');[capBtn,gear].forEach(b=>{b.type='bu
 const sync=()=>{capBtn.textContent=L2('Untertitel: ','Captions: ')+(capEl.hidden?L2('aus','off'):L2('an','on'));capBtn.setAttribute('aria-pressed',!capEl.hidden);gear.textContent=L2('KI & Stimme …','AI & voice …');gear.setAttribute('aria-expanded',!box.hidden)};
 capBtn.onclick=()=>{capEl.hidden=!capEl.hidden;sync()};gear.onclick=()=>{box.hidden=!box.hidden;if(!box.hidden)buildCfg();sync()};
 /* microphone permission: ask the browser, and if it is blocked explain how to allow it */
-async function micHelp(){if(helpOpen)return false;helpOpen=true;state('error',L2('Mikrofon blockiert','Microphone blocked'));
+async function micHelp(){if(helpOpen)return false;helpOpen=true;active=false;stopRec();state('error',L2('Mikrofon blockiert','Microphone blocked'));
 const msg=L2('Jarvis braucht Zugriff auf dein Mikrofon. Klicke in der Adressleiste auf das Schloss- oder Einstellungs-Symbol, wähle „Mikrofon“ und dann „Zulassen“. Danach drücke „Erneut versuchen“.','Jarvis needs access to your microphone. Click the lock or settings icon in the address bar, choose “Microphone” and then “Allow”. Then press “Try again”.');
 notify('Microphone blocked',msg,'warn');speak(L2('Ich brauche Zugriff auf dein Mikrofon. Bitte erlaube es in der Adressleiste.','I need access to your microphone. Please allow it in the address bar.'),true);
 const again=await dlg(msg,{ok:L2('Erneut versuchen','Try again')});helpOpen=false;if(again)return ensureMic();idle();return false}
@@ -465,7 +465,7 @@ try{if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){const s=awai
 catch(e){const n=e&&e.name;if(n==='NotAllowedError'||n==='SecurityError'||n==='PermissionDeniedError')return micHelp();if(n==='NotFoundError'||n==='DevicesNotFoundError'){const m=L2('Ich finde kein Mikrofon, Meister. Schließe eins an.','I cannot find a microphone, Master. Please connect one.');state('error',L2('Kein Mikrofon','No microphone'));notify('No microphone',m,'error');speak(m,true);return false}return true}}
 function pickVoice(cfg,lang){const vs=speechSynthesis.getVoices();if(cfg.voice){const v=vs.find(x=>x.name===cfg.voice);if(v)return v}const pre=vs.filter(v=>v.lang.toLowerCase().replace('_','-').startsWith(lang));return pre.find(v=>MALE.test(v.name))||pre.find(v=>/online|natural|google/i.test(v.name))||pre[0]}
 function speak(text,force){return new Promise(async res=>{text=String(text).replace(/[*_#`>]/g,'').slice(0,800);const cfg=jvCfg();speaking=true;state('speaking',L2('Ich spreche …','Speaking …'));if(rec)try{rec.stop()}catch(e){}
-const done=()=>{if(!speaking)return;speaking=false;if(active)listen();idle();res()};
+const done=()=>{if(!speaking)return;speaking=false;if(active)listen();if(helpOpen)state('error',L2('Mikrofon blockiert','Microphone blocked'));else idle();res()};
 const play=async(b,rate)=>{const a=curAudio=new Audio(URL.createObjectURL(b));a.preservesPitch=false;a.playbackRate=rate;a.onended=a.onerror=done;await a.play()};
 if(cfg.engine==='eleven'&&elKey()&&!elDead){try{await play(await elevenAudio(text,cfg),1);return}catch(e){console.warn('[jarvis] ElevenLabs failed',e);if([401,402,403,429].includes(e.status))elDead=true;notify('ElevenLabs',(e.status===429||e.status===402?'Free quota reached. ':'')+(e.message||'error')+' \u2014 '+L2('ich nutze die Browser-Stimme.','using the browser voice.'),'warn')}}
 else if(cfg.engine==='piper'){try{const blob=await piperAudio(text,p=>{if(p&&p.total)st.textContent=L2('Stimme wird geladen: ','Loading voice: ')+Math.round(100*p.loaded/p.total)+' %'});await play(blob,Math.min(1.1,Math.max(.7,.75+.25*cfg.pitch)));return}catch(e){console.warn('[jarvis] neural voice failed',e);notify('Neural voice failed',(e&&e.message||'error')+' \u2014 '+L2('ich nutze die Browser-Stimme.','using the browser voice.'),'warn')}}
@@ -492,7 +492,7 @@ function heard(t){if(!t)return;
 if(jvAsking){const y=YES.test(t),n=NO.test(t);if(y!==n){const b=document.querySelector(y?'.scrim .pri':'.scrim button:not(.pri)');if(b)b.click()}return}
 const m=t.match(WAKE);if(m){const rest=t.slice(m[0].length).trim();if(rest)handle(rest);else{cap('me','Jarvis');say(L2('Ja, Meister?','Yes, Master?'))}return}
 if(waiting||!jvCfg().wakeReq)handle(t)}
-async function start(){active=true;idle();if(!(await ensureMic())){active=false;idle();return}if(!active)return;listen();idle();try{if(navigator.userActivation&&navigator.userActivation.isActive)speak(L2('Jarvis ist bereit, Meister. Sage „Hey Jarvis“.','Jarvis is ready, Master. Say “Hey Jarvis”.'),true)}catch(e){}}
+async function start(){active=true;state('thinking',L2('Warte auf die Mikrofon-Erlaubnis …','Waiting for microphone permission …'));if(!(await ensureMic())){active=false;idle();return}active=true;listen();idle();try{if(navigator.userActivation&&navigator.userActivation.isActive)speak(L2('Jarvis ist bereit, Meister. Sage „Hey Jarvis“.','Jarvis is ready, Master. Say “Hey Jarvis”.'),true)}catch(e){}}
 function pause(){active=false;waiting=false;stopRec();if(TTS)speechSynthesis.cancel();if(curAudio)curAudio.pause();speaking=false;idle()}
 orb.onclick=()=>{if(active)pause();else start()};
 /* settings: AI provider and key, voice engine, wake word */
